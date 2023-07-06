@@ -69,16 +69,46 @@ class CustomTitleBar(QWidget):
         self.m_old_pos = event.pos()
         self.m_mouse_down = event.button() == Qt.LeftButton
 
+        # When mouse is pressed, record whether the window is maximized
+        self.m_was_maximized = self.parent().isMaximized()
+        if self.m_was_maximized:
+            # Store global mouse position when the user starts dragging the window
+            self.m_global_mouse_pos = event.globalPos()
+
     def mouseMoveEvent(self, event):
         x = event.x()
         y = event.y()
 
         if self.m_mouse_down:
             parent = self.parent()
-            parent.move(parent.x() + x - self.m_old_pos.x(), parent.y() + y - self.m_old_pos.y())
+            if self.m_was_maximized:
+                # When the window is maximized and the user starts dragging, we should 'restore down' the window
+                # and calculate the new position of the window.
+                parent.showNormal()
+                self.btn_max.setIcon(self.max_icon)  # Set icon to maximize
+                # Calculate ratio of mouse position in relation to window size
+                ratio = self.m_old_pos.x()/self.width()
+                # Calculate new x position for the window and ensure it's an integer
+                # Now, instead of aligning the mouse to the old position in the title bar,
+                # we align it to the center of the window
+                new_x = int(event.globalPos().x() - self.width() / 2)
+                new_y = int(event.globalPos().y() - self.m_old_pos.y())
+                parent.move(new_x, new_y)
+            else:
+                parent.move(parent.x() + x - self.m_old_pos.x(), parent.y() + y - self.m_old_pos.y())
+
+
+
+
+
 
     def mouseReleaseEvent(self, event):
         m_mouse_down = False
+
+        # If the mouse is released at the top of the screen, maximize the window
+        if event.globalPos().y() == 0:
+            self.parent().showMaximized()
+            self.btn_max.setIcon(self.restore_icon)  # Set icon to restore
 
     def btn_close_clicked(self):
         self.parent().close()
