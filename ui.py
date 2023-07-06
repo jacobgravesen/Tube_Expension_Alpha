@@ -28,26 +28,42 @@ class CustomTitleBar(QWidget):
 
         btn_size = 32
 
+        # Cross Button
         self.btn_close = QPushButton('')
         self.btn_close.clicked.connect(self.btn_close_clicked)
         self.btn_close.setFixedSize(btn_size, btn_size)
-        self.btn_close.setIcon(QIcon('Icons\cross_icon.png'))  # Change to your icon
+        self.btn_close.setIcon(QIcon('Icons\cross_icon.png')) 
 
+        # Minimize Button
         self.btn_min = QPushButton('')
         self.btn_min.clicked.connect(self.btn_min_clicked)
         self.btn_min.setFixedSize(btn_size, btn_size)
-        self.btn_min.setIcon(QIcon('Icons\minimize_icon.png'))  # Change to your icon
+        self.btn_min.setIcon(QIcon('Icons\minimize_icon.png'))  
 
+        # Maximize/Restore Button
         self.btn_max = QPushButton('')
         self.btn_max.clicked.connect(self.btn_max_clicked)
         self.btn_max.setFixedSize(btn_size, btn_size)
-        self.btn_max.setIcon(QIcon('Icons\Maximize_icon.png'))  # Change to your icon
+        self.btn_max.setIcon(QIcon('Icons\Maximize_icon.png')) 
+
+        # New code. 
+        self.max_icon = QIcon('Icons\Maximize_icon.png')
+        self.restore_icon = QIcon('Icons\Restore_down_icon.png') 
+        self.btn_max.setIcon(self.max_icon)
 
         layout.addWidget(self.title_label)
         layout.addItem(QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
         layout.addWidget(self.btn_min)
         layout.addWidget(self.btn_max)
         layout.addWidget(self.btn_close)
+
+    def btn_max_clicked(self):
+        if self.parent().isMaximized():
+            self.parent().showNormal()
+            self.btn_max.setIcon(self.max_icon)  # Set icon to maximize
+        else:
+            self.parent().showMaximized()
+            self.btn_max.setIcon(self.restore_icon)  # Set icon to restore
 
     def mousePressEvent(self, event):
         self.m_old_pos = event.pos()
@@ -67,12 +83,6 @@ class CustomTitleBar(QWidget):
     def btn_close_clicked(self):
         self.parent().close()
 
-    def btn_max_clicked(self):
-        if self.parent().isMaximized():
-            self.parent().showNormal()
-        else:
-            self.parent().showMaximized()
-
     def btn_min_clicked(self):
         self.parent().showMinimized()
 
@@ -80,6 +90,10 @@ class CustomTitleBar(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        # This removes the standard Windows title bar. (Not Pretty)
+        self.setWindowFlags(Qt.FramelessWindowHint)
+
         self.initUI()
 
     def initUI(self):
