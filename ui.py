@@ -3,6 +3,33 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout,
 from PyQt5.QtGui import QPalette, QColor, QIcon
 from PyQt5.QtCore import Qt, QPoint
 
+# Setting up the app color theme and other settings:
+def setup_application():
+    app = QApplication([])
+    app.setStyle('Fusion')
+
+    dark_palette = QPalette()
+
+    # Base colors
+    dark_palette.setColor(QPalette.Window, QColor(53, 53, 53))
+    dark_palette.setColor(QPalette.WindowText, QColor(255, 255, 255))
+    dark_palette.setColor(QPalette.Base, QColor(25, 25, 25))
+    dark_palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+    dark_palette.setColor(QPalette.ToolTipBase, QColor(255, 255, 255))
+    dark_palette.setColor(QPalette.ToolTipText, QColor(255, 255, 255))
+
+    # Button colors
+    dark_palette.setColor(QPalette.Button, QColor(53, 53, 53))
+    dark_palette.setColor(QPalette.ButtonText, QColor(255, 255, 255))
+
+    # Highlight colors
+    dark_palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+    dark_palette.setColor(QPalette.HighlightedText, QColor(0, 0, 0))
+
+    app.setPalette(dark_palette)
+
+    return app
+
 class CustomTitleBar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -97,11 +124,6 @@ class CustomTitleBar(QWidget):
             else:
                 parent.move(parent.x() + x - self.m_old_pos.x(), parent.y() + y - self.m_old_pos.y())
 
-
-
-
-
-
     def mouseReleaseEvent(self, event):
         m_mouse_down = False
 
@@ -176,31 +198,7 @@ class MainWindow(QMainWindow):
         self.log_output.append(message)
 
 if __name__ == '__main__':
-    app = QApplication([])
-
-
-    # Apply dark theme
-    app.setStyle('Fusion')
-
-    dark_palette = QPalette()
-
-    # Base colors
-    dark_palette.setColor(QPalette.Window, QColor(53, 53, 53))
-    dark_palette.setColor(QPalette.WindowText, QColor(255, 255, 255))
-    dark_palette.setColor(QPalette.Base, QColor(25, 25, 25))
-    dark_palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
-    dark_palette.setColor(QPalette.ToolTipBase, QColor(255, 255, 255))
-    dark_palette.setColor(QPalette.ToolTipText, QColor(255, 255, 255))
-
-    # Button colors
-    dark_palette.setColor(QPalette.Button, QColor(53, 53, 53))
-    dark_palette.setColor(QPalette.ButtonText, QColor(255, 255, 255))
-
-    # Highlight colors
-    dark_palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
-    dark_palette.setColor(QPalette.HighlightedText, QColor(0, 0, 0))
-
-    app.setPalette(dark_palette)
+    app = setup_application()
 
     mainWin = MainWindow()
     mainWin.show()
