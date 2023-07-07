@@ -5,6 +5,8 @@ from PyQt5.QtCore import Qt, QPoint
 from vision import VisionSystem
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView
+
 
 
 # Setting up the app color theme and other settings:
@@ -47,6 +49,7 @@ class CustomTitleBar(QWidget):
         self.m_old_pos = None
 
         self.initUI()
+
     def initUI(self):
         self.setAutoFillBackground(True)
         self.setFixedHeight(32)
@@ -77,7 +80,6 @@ class CustomTitleBar(QWidget):
         self.btn_max.setFixedSize(btn_size, btn_size)
         self.btn_max.setIcon(QIcon('Icons\Maximize_icon.png')) 
 
-        # New code. 
         self.max_icon = QIcon('Icons\Maximize_icon.png')
         self.restore_icon = QIcon('Icons\Restore_down_icon.png') 
         self.btn_max.setIcon(self.max_icon)
@@ -129,7 +131,7 @@ class CustomTitleBar(QWidget):
                 parent.move(parent.x() + x - self.m_old_pos.x(), parent.y() + y - self.m_old_pos.y())
 
     def mouseReleaseEvent(self, event):
-        m_mouse_down = False
+        self.m_mouse_down = False
 
         # If the mouse is released at the top of the screen, maximize the window
         if event.globalPos().y() == 0:
@@ -141,7 +143,6 @@ class CustomTitleBar(QWidget):
 
     def btn_min_clicked(self):
         self.parent().showMinimized()
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -155,69 +156,87 @@ class MainWindow(QMainWindow):
         # Create instance of vision system
         self.vision_system = VisionSystem()
 
-        # Create label for displaying the camera feed
-        self.camera_label = QLabel(self)
+       
+        # Create a QGraphicsView for displaying the camera feed
+        self.camera_view = QGraphicsView(self)
+
+        # Create a QGraphicsScene for holding the QPixmap
+        self.camera_scene = QGraphicsScene(self)
+        self.camera_view.setScene(self.camera_scene)
 
         # Create a timer for updating the camera feed
         self.camera_timer = QTimer()
         self.camera_timer.timeout.connect(self.update_camera_feed)
         self.camera_timer.start(100)  # Update every 100 ms
+
+        self.layout.addWidget(self.camera_view)  # Replace self.camera_label with self.camera_view
     
     def update_camera_feed(self):
         # Get the current frame from the vision system as a QImage
-        frame = self.vision_system.get_current_frame()
+        frame = self.vision_system.get_current_frame()       
 
-        # Convert the QImage to a QPixmap and set it on the QLabel
-        self.camera_label.setPixmap(QPixmap.fromImage(frame))
+        # Update the QGraphicsScene with the new QPixmap
+        self.camera_scene.clear()  # Clear the previous frame
+        self.camera_scene.addPixmap(QPixmap.fromImage(frame))
 
     def initUI(self):
-        # Set window properties
         self.setWindowTitle('Tube Expansion Alpha')
-        self.setGeometry(100, 100, 800, 600)  # Position and size
+        self.setGeometry(100, 100, 800, 600)
+        self.initCentralWidget()
+        self.initCustomTitleBar()
+        self.initControlButtons()
+        self.initStatusInformation()
+        self.initCameraFeedDisplay()
+        self.initSystemParameters()
+        self.initLogOutput()
+        self.initManualControl()
 
-        # Define a central widget (required by QMainWindow)
+    def initCentralWidget(self):
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
-
-        # Define a layout (widgets will be added to this layout)
         self.layout = QVBoxLayout()
         self.central_widget.setLayout(self.layout)
 
-        # Sets Custom Titlebar
+    def initCustomTitleBar(self):
         title_bar = CustomTitleBar(self)
         self.setMenuWidget(title_bar)  # Set the custom title bar
 
-        # Add Start/Stop Controls
+    def initControlButtons(self):
         self.start_button = QPushButton('Start', self)
         self.stop_button = QPushButton('Stop', self)
         self.layout.addWidget(self.start_button)
         self.layout.addWidget(self.stop_button)
 
-        # Add Status Information
+    def initStatusInformation(self):
         self.status_label = QLabel('Status: idle')
         self.layout.addWidget(self.status_label)
 
-        # Add Camera Feed Display (placeholder)
+    
+    def initCameraFeedDisplay(self):
         self.camera_label = QLabel('Camera feed goes here')
         self.layout.addWidget(self.camera_label)
 
-        # Add System Parameters (placeholder)
+    def initSystemParameters(self):
         self.parameters_label = QLabel('Parameters go here')
         self.layout.addWidget(self.parameters_label)
 
-        # Add Log Output
+    def initLogOutput(self):
         self.log_output = QTextEdit()
         self.layout.addWidget(self.log_output)
 
-        # Add Manual Control (placeholder)
+    def initManualControl(self):
         self.manual_control_label = QLabel('Manual controls go here')
         self.layout.addWidget(self.manual_control_label)
+
 
     def update_status(self, status):
         self.status_label.setText(f'Status: {status}')
 
     def log(self, message):
         self.log_output.append(message)
+
+    def closeEvent(self, event): # Handling properly closing webcam when closing application.
+        self.vision_system.capture.release()
 
 if __name__ == '__main__':
     app = setup_application()
