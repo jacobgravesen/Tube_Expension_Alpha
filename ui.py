@@ -2,6 +2,10 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPu
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QLabel, QHBoxLayout, QWidget, QSizePolicy, QSpacerItem
 from PyQt5.QtGui import QPalette, QColor, QIcon
 from PyQt5.QtCore import Qt, QPoint
+from vision import VisionSystem
+from PyQt5.QtCore import QTimer
+from PyQt5.QtGui import QPixmap
+
 
 # Setting up the app color theme and other settings:
 def setup_application():
@@ -147,6 +151,24 @@ class MainWindow(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint)
 
         self.initUI()
+
+        # Create instance of vision system
+        self.vision_system = VisionSystem()
+
+        # Create label for displaying the camera feed
+        self.camera_label = QLabel(self)
+
+        # Create a timer for updating the camera feed
+        self.camera_timer = QTimer()
+        self.camera_timer.timeout.connect(self.update_camera_feed)
+        self.camera_timer.start(100)  # Update every 100 ms
+    
+    def update_camera_feed(self):
+        # Get the current frame from the vision system as a QImage
+        frame = self.vision_system.get_current_frame()
+
+        # Convert the QImage to a QPixmap and set it on the QLabel
+        self.camera_label.setPixmap(QPixmap.fromImage(frame))
 
     def initUI(self):
         # Set window properties
