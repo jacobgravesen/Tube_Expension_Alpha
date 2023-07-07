@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt, QPoint
 from vision import VisionSystem
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView, QGridLayout
 
 
 
@@ -155,21 +155,6 @@ class MainWindow(QMainWindow):
 
         # Create instance of vision system
         self.vision_system = VisionSystem()
-
-       
-        # Create a QGraphicsView for displaying the camera feed
-        self.camera_view = QGraphicsView(self)
-
-        # Create a QGraphicsScene for holding the QPixmap
-        self.camera_scene = QGraphicsScene(self)
-        self.camera_view.setScene(self.camera_scene)
-
-        # Create a timer for updating the camera feed
-        self.camera_timer = QTimer()
-        self.camera_timer.timeout.connect(self.update_camera_feed)
-        self.camera_timer.start(100)  # Update every 100 ms
-
-        self.layout.addWidget(self.camera_view)  # Replace self.camera_label with self.camera_view
     
     def update_camera_feed(self):
         # Get the current frame from the vision system as a QImage
@@ -182,14 +167,28 @@ class MainWindow(QMainWindow):
     def initUI(self):
         self.setWindowTitle('Tube Expansion Alpha')
         self.setGeometry(100, 100, 800, 600)
-        self.initCentralWidget()
-        self.initCustomTitleBar()
+
+        # Create and set the layout first
+        self.grid_layout = QGridLayout()
+        self.central_widget = QWidget()
+        self.central_widget.setLayout(self.grid_layout)
+        self.setCentralWidget(self.central_widget)
+
+        # Add custom title bar
+        self.initCustomTitleBar() 
+
+        # Now, it's safe to call the other initialization methods
+        self.initCameraFeedDisplay()
         self.initControlButtons()
         self.initStatusInformation()
-        self.initCameraFeedDisplay()
         self.initSystemParameters()
         self.initLogOutput()
         self.initManualControl()
+
+        # Adjust the row stretch
+        self.grid_layout.setRowStretch(0, 80)  # camera feed row
+        self.grid_layout.setRowStretch(1, 20)  # all other elements row
+
 
     def initCentralWidget(self):
         self.central_widget = QWidget()
@@ -198,35 +197,53 @@ class MainWindow(QMainWindow):
         self.central_widget.setLayout(self.layout)
 
     def initCustomTitleBar(self):
-        title_bar = CustomTitleBar(self)
-        self.setMenuWidget(title_bar)  # Set the custom title bar
+        self.title_bar = CustomTitleBar(self)
+        self.setMenuWidget(self.title_bar)  # Set the custom title bar
+
 
     def initControlButtons(self):
-        self.start_button = QPushButton('Start', self)
-        self.stop_button = QPushButton('Stop', self)
-        self.layout.addWidget(self.start_button)
-        self.layout.addWidget(self.stop_button)
+        control_layout = QVBoxLayout()
+
+        self.start_button = QPushButton('Start')
+        self.stop_button = QPushButton('Stop')
+        control_layout.addWidget(self.start_button)
+        control_layout.addWidget(self.stop_button)
+
+        control_widget = QWidget()
+        control_widget.setLayout(control_layout)
+        self.grid_layout.addWidget(control_widget, 1, 0)
 
     def initStatusInformation(self):
         self.status_label = QLabel('Status: idle')
-        self.layout.addWidget(self.status_label)
+        self.grid_layout.addWidget(self.status_label, 1, 1)
 
     
     def initCameraFeedDisplay(self):
-        self.camera_label = QLabel('Camera feed goes here')
-        self.layout.addWidget(self.camera_label)
+        # Create a QGraphicsView for displaying the camera feed
+        self.camera_view = QGraphicsView(self)
+
+        # Create a QGraphicsScene for holding the QPixmap
+        self.camera_scene = QGraphicsScene(self)
+        self.camera_view.setScene(self.camera_scene)
+
+        # Create a timer for updating the camera feed
+        self.camera_timer = QTimer()
+        self.camera_timer.timeout.connect(self.update_camera_feed)
+        self.camera_timer.start(100)  # Update every 100 ms
+
+        self.grid_layout.addWidget(self.camera_view, 0, 0, 1, 6)  # Replace self.camera_label with self.camera_view
 
     def initSystemParameters(self):
         self.parameters_label = QLabel('Parameters go here')
-        self.layout.addWidget(self.parameters_label)
+        self.grid_layout.addWidget(self.parameters_label, 1, 2)
 
     def initLogOutput(self):
         self.log_output = QTextEdit()
-        self.layout.addWidget(self.log_output)
+        self.grid_layout.addWidget(self.log_output, 1, 3)
 
     def initManualControl(self):
         self.manual_control_label = QLabel('Manual controls go here')
-        self.layout.addWidget(self.manual_control_label)
+        self.grid_layout.addWidget(self.manual_control_label, 1, 4)
 
 
     def update_status(self, status):
