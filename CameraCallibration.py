@@ -122,10 +122,10 @@ def visualize_all_points(image_folder, processed_image_files, obj_points, img_po
 
 
 if __name__ == "__main__":
-    calibrator = CameraCalibrator((5,6), 3.59)
+    calibrator = CameraCalibrator((5,6), 3.59) # width x height
 
     # Specify the folder containing the images for calibration
-    image_folder = r'C:\Users\grave\Desktop\AI-Freelance-Prep\TestNeuralNet\CallibrationImages'
+    image_folder = r'C:\Users\grave\Desktop\AI-Freelance-Prep\Tube_Expension_Alpha\CallibrationImages'
     
     # List all files in the specified folder
     image_files = [f for f in os.listdir(image_folder) if f.endswith('.jpg') or f.endswith('.png')]
