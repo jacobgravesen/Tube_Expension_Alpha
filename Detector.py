@@ -3,17 +3,17 @@ import torch
 from ultralytics import YOLO
 from time import time
 #import numpy as np
-import cupy as np
+#import cupy as np
+import numpy as np
 import pyrealsense2 as rs
 
 
 class Detector:
     def __init__(self, model_path):
-
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         print("Using Device: ", self.device)
-
         self.model = self.load_model(model_path)
+        self.results = None  # Initialize results here
 
     def load_model(self, model_path):
         model = YOLO(model_path)
@@ -69,7 +69,7 @@ class Detector:
                             cv2.circle(annotated_frame, (center_x, center_y), radius=2, color=(255, 255, 0), thickness=-1)
                             cv2.putText(annotated_frame, f'{int(track_id)}', (center_x, center_y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                             cv2.putText(annotated_frame, f'Depth: {int(depth)}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-                            cv2.putText(annotated_frame, f'3D: X={point_3d[0]:.2f}, Y={point_3d[1]:.2f}, Z={point_3d[2]:.2f}', (center_x, center_y + 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                            cv2.putText(annotated_frame, f'3D: X={point_3d[0]:.2f}, Y={point_3d[1]:.2f}, Z={point_3d[2]:.2f}', (center_x, center_y + 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
                 fps = self.calculate_fps(start_time)
                 cv2.putText(annotated_frame, f'FPS: {int(fps)}', (20,70), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
                 cv2.imshow("Holes Detector", annotated_frame)
@@ -148,12 +148,13 @@ class Detector:
     
     def calculate_box_centers(self, results):
         box_centers = []
-        for result in results:
-            # Check if boxes were detected
-            if result.boxes is not None:
-                for box in result.boxes.xyxy:  # Use xyxy attribute for boxes
-                    center_x, center_y = self.calculate_box_center(box)
-                    box_centers.append((center_x, center_y))
+        if results is not None:
+            for result in results:
+                # Check if boxes were detected
+                if result.boxes is not None:
+                    for box in result.boxes.xyxy:  # Use xyxy attribute for boxes
+                        center_x, center_y = self.calculate_box_center(box)
+                        box_centers.append((center_x, center_y))
         return box_centers
 
 

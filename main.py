@@ -31,11 +31,12 @@ from PointCloudGenerator import PointCloudGenerator
 # Instantiate the Detector class with the model path
 detector = Detector('best.pt')
 
+
 # Instantiate the PointCloudGenerator class with the intrinsic parameters file
 pcg = PointCloudGenerator('intrinsic_parameters.csv')
 
 # Run the segmentation on the webcam feed
-detector.run_segmentation(1, pcg)  
+detector.run_segmentation(2, pcg)  
 
 # Get the 2D points and their corresponding depth values
 points_2d = detector.calculate_box_centers(detector.results)
