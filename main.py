@@ -41,7 +41,7 @@ camera_to_robot_transformation_matrix = load_transformation_matrix('vision/camer
 
 
 
-
+  
 # Run while the video capture is open
 while detector.cap.isOpened():
     # Get the processed frame and the 3D coordinates
