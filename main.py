@@ -24,11 +24,12 @@ detector.start_pipeline(1)
 
 # Instantiate the RobotInstructions class
 robot_instructions = RobotInstructions(detector)
-# Instantiate the MoveRobot class
-move_robot = MoveRobot()
 
 # Instantiate the TargetCoordsHandler class
 target_coords_handler = TargetCoordsHandler()
+
+# Instantiate the MoveRobot class
+move_robot = MoveRobot(target_coords_handler)
 
 # Create a QApplication instance using setup_application
 app = setup_application()

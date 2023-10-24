@@ -63,7 +63,7 @@ class MainWindow(QMainWindow):
 
         self.initUI()
 
-        self.move_robot = MoveRobot()
+        self.move_robot = MoveRobot(target_coords_handler)
 
 
     
@@ -153,6 +153,16 @@ class MainWindow(QMainWindow):
         self.write_completed_point_button = QPushButton('Write Completed Point')
         self.write_completed_point_button.clicked.connect(self.on_write_completed_point_button_clicked)
         control_layout_right.addWidget(self.write_completed_point_button)
+
+        # Add 'Move to All Required Points' button to the right layout
+        self.move_to_all_points_button = QPushButton('Move to All Required Points')
+        self.move_to_all_points_button.clicked.connect(self.on_move_to_all_points_button_clicked)
+        control_layout_right.addWidget(self.move_to_all_points_button)
+
+        self.move_to_first_point_button = QPushButton('Move to First Point')
+        self.move_to_first_point_button.clicked.connect(self.on_move_to_first_point_button_clicked)
+        control_layout_right.addWidget(self.move_to_first_point_button)
+
 
 
         # Create a QHBoxLayout
@@ -343,6 +353,12 @@ class MainWindow(QMainWindow):
 
     def on_write_completed_point_button_clicked(self):
         self.target_coords_handler.move_completed_point()
+
+    def on_move_to_all_points_button_clicked(self):
+        self.move_robot.move_to_all_required_points()
+
+    def on_move_to_first_point_button_clicked(self):
+        self.move_robot.move_to_first_required_point()
 
 if __name__ == '__main__':
     app = setup_application()

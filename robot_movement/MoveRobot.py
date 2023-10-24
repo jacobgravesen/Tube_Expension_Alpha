@@ -6,7 +6,7 @@ import math
 
 
 class MoveRobot:
-    def __init__(self):
+    def __init__(self, target_coords_handler):
         self.robodk = Robolink()
         self.station = self.robodk.Item('Station1')
         if not self.station.Valid():
@@ -14,7 +14,7 @@ class MoveRobot:
         self.robot = self.robodk.Item('UR5') 
 
         self.current_point = None
-
+        self.target_coords_handler = target_coords_handler
 
     
     def simple_move(self, point=[474.50, -109.30,608.95], orientation=[math.radians(0), 90, math.radians(0)], speed=20): # used to be orientation=[90,90,90] # Now: orientation=[math.radians(0),90,math.radians(0)]. This is dusche dobre.
@@ -47,6 +47,58 @@ class MoveRobot:
         else:
             print("Warning! No solution with the elbow in an upward position found.")
 
+    def move_robot_to_specific_point(self, point, min_height=20):
+        # Check if the point has been set
+        if point is not None:
+            # Check if the height is above the minimum
+            if point[1] >= min_height:
+                # Convert the point from cm to mm
+                point_mm = tuple(coordinate * 10 for coordinate in point)
+                # Rearrange the coordinates
+                transformed_point = (point_mm[2], point_mm[0], point_mm[1])
+                # Move the robot to the transformed point
+                self.simple_move(transformed_point)
+            else:
+                print(f'Warning! The target height {point[1]} is below the minimum height {min_height}.')
+        else:
+            print('Point not set')
+
+    def move_to_all_required_points(self, min_height=20):
+        # Get the initial number of points
+        num_points = self.target_coords_handler.get_num_required_points()
+
+        for _ in range(num_points):
+            # Write the next point from required_points.csv to current_point.csv
+            self.target_coords_handler.write_current_point_to_csv()
+
+            # Get the current point from current_point.csv
+            current_point = self.target_coords_handler.read_current_point_from_csv()
+
+            if current_point is not None and len(current_point) >= 3:
+                # Move the robot to the point
+                self.move_robot_to_specific_point(current_point, min_height)
+
+                # Once the robot has reached the point, move the point to completed_points.csv
+                self.target_coords_handler.move_completed_point()
+            else:
+                print('No more points in required_points.csv')
+                break
+
+    def move_to_first_required_point(self, min_height=20):
+        # Write the first point from required_points.csv to current_point.csv
+        self.target_coords_handler.write_current_point_to_csv()
+
+        # Get the current point from current_point.csv
+        current_point = self.target_coords_handler.read_current_point_from_csv()
+
+        if current_point is not None and len(current_point) >= 3:
+            # Move the robot to the point
+            self.move_robot_to_specific_point(current_point, min_height)
+
+            # Once the robot has reached the point, move the point to completed_points.csv
+            self.target_coords_handler.move_completed_point()
+        else:
+            print('No more points in required_points.csv')
 
 if __name__ == "__main__":
     # Create an instance of MoveRobot

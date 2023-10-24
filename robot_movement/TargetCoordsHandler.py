@@ -73,3 +73,21 @@ class TargetCoordsHandler:
             with open('robot_movement/current_point.csv', 'w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(["X", "Y", "Z"])  # Write the header
+
+    def get_num_required_points(self):
+        with open('robot_movement/required_points.csv', 'r') as f:
+            return sum(1 for line in f)
+
+    def read_current_point_from_csv(self):
+        # Open the current_point.csv file in read mode
+        with open('robot_movement/current_point.csv', 'r') as file:
+            reader = csv.reader(file)
+            next(reader, None)  # Skip the header
+            current_point = list(reader)  # Get all rows
+
+        if current_point:
+            # Get the first point and convert it to a list of floats
+            current_point = list(map(float, current_point[0]))
+            return current_point
+        else:
+            return None
