@@ -3,6 +3,8 @@ import numpy as np
 from robodk.robomath import transl
 from robodk.robomath import rotz, roty, rotx
 import math
+from robolink import Robolink, Item, ROBOTCOM_READY, RUNMODE_RUN_ROBOT
+
 
 
 class MoveRobot:
@@ -13,11 +15,24 @@ class MoveRobot:
             self.station = self.robodk.AddFile('Station1.rdk')
         self.robot = self.robodk.Item('UR5') 
 
+        # Connect to the robot using default IP
+        success = self.robot.Connect()  # Try to connect once
+        # success = self.robot.ConnectSafe() # Try to connect multiple times
+        status, status_msg = self.robot.ConnectedState()
+        if status != ROBOTCOM_READY:
+            # Stop if the connection did not succeed
+            print(status_msg)
+            raise Exception("Failed to connect: " + status_msg)
+
+        # This will set to run the API programs on the robot and the simulator (online programming)
+        self.robodk.setRunMode(RUNMODE_RUN_ROBOT)
+
         self.current_point = None
         self.target_coords_handler = target_coords_handler
 
+
     
-    def simple_move(self, point=[474.50, -109.30,608.95], orientation=[math.radians(0), 90, math.radians(0)], speed=20): # used to be orientation=[90,90,90] # Now: orientation=[math.radians(0),90,math.radians(0)]. This is dusche dobre.
+    def simple_move(self, point=[474.50, -109.30,608.95], orientation=[math.radians(0), 90, math.radians(0)], speed=10): # used to be orientation=[90,90,90] # Now: orientation=[math.radians(0),90,math.radians(0)]. This is dusche dobre.
         # Set the robot speed
         self.robot.setSpeed(speed)
 
