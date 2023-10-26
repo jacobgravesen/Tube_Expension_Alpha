@@ -75,7 +75,7 @@ class MoveRobot:
             current_point = self.target_coords_handler.read_current_point_from_csv()
 
             if current_point is not None and len(current_point) >= 3:
-                # Move the robot to the point
+                # Move the robot to the point'ø
                 self.move_robot_to_specific_point(current_point, min_height)
 
                 # Once the robot has reached the point, move the point to completed_points.csv
