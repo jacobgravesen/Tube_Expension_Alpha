@@ -65,8 +65,8 @@ class Detector:
             box_centers = self.calculate_box_centers(self.results)
             annotated_frame = self.results[0].plot(boxes=False)
             
-            # Check if any objects were detected and their IDs are available
-            print(f"boxes: {self.results[0].boxes}, boxes.id: {self.results[0].boxes.id}")
+            # Check if any objects were detected and their IDs are available # prints box dimensions and ids.
+            #print(f"boxes: {self.results[0].boxes}, boxes.id: {self.results[0].boxes.id}")
 
             if self.results[0].boxes is not None:
                 # Draw each mask center as a small green dot and display the tracking ID
@@ -186,8 +186,8 @@ if __name__ == "__main__":
     from vision.PointCloudGenerator import PointCloudGenerator
     from robot_movement.RobotInstructions import RobotInstructions
     from robot_movement.MoveRobot import MoveRobot
-    from utils import load_transformation_matrix
-    from utils import camera_to_robot_coordinates
+    from utils.utils import load_transformation_matrix
+    from utils.utils import camera_to_robot_coordinates
     import numpy as np
     import cv2
     # Instantiate the Detector class with the model path

@@ -13,8 +13,8 @@ from robot_movement.RobotInstructions import RobotInstructions
 from robot_movement.TargetCoordsHandler import TargetCoordsHandler
 
 from robot_movement.MoveRobot import MoveRobot
-from utils import load_transformation_matrix
-from utils import camera_to_robot_coordinates
+from utils.utils import load_transformation_matrix
+from utils.utils import camera_to_robot_coordinates
 
 
 # Instantiate the Detector class with the model path
@@ -29,7 +29,7 @@ robot_instructions = RobotInstructions(detector)
 target_coords_handler = TargetCoordsHandler()
 
 # Instantiate the MoveRobot class
-move_robot = MoveRobot(target_coords_handler)
+move_robot = MoveRobot(target_coords_handler, 'robot_movement/sim_robot_to_real_robot.csv')
 
 # Create a QApplication instance using setup_application
 app = setup_application()

@@ -10,7 +10,7 @@ from PyQt5.QtGui import QImage, QPainter
 from .CustomTitleBar import CustomTitleBar
 from robot_movement.MoveRobot import MoveRobot
 from robot_movement.RobotInstructions import RobotInstructions
-from utils import load_transformation_matrix
+from utils.utils import load_transformation_matrix
 import numpy as np
 
 
@@ -61,9 +61,10 @@ class MainWindow(QMainWindow):
 
         self.camera_to_robot_transformation_matrix = load_transformation_matrix('vision/camera_to_robot.csv')
 
+        self.move_robot = MoveRobot(target_coords_handler, 'robot_movement/sim_robot_to_real_robot.csv')
+
         self.initUI()
 
-        self.move_robot = MoveRobot(target_coords_handler)
 
 
     
