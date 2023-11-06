@@ -92,6 +92,12 @@ class MoveRobot:
 
             # Step 2: Get the current point from current_point.csv
             point = self.target_coords_handler.read_current_point_from_csv()
+
+            # Check if point is None
+            if point is None:
+                print("No more points in the list")
+                return
+            
             self.move_robot_to_point([point[0]-30, point[1], point[2]])
             self.move_robot_to_point(point)
             self.move_robot_to_point([point[0]-30, point[1], point[2]])

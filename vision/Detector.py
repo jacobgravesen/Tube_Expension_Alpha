@@ -70,11 +70,19 @@ class Detector:
 
             if self.results[0].boxes is not None:
                 # Draw each mask center as a small green dot and display the tracking ID
-
-                for i, (center_x, center_y) in enumerate(box_centers):
+                for i, box in enumerate(self.results[0].boxes.xyxy):
+                    center_x, center_y = self.calculate_box_center(box)
                     if center_x is not None and center_y is not None:
-                        depth = self.get_depth(center_x, center_y, depth_frame)
-                        point_3d = pcg.convert_2d_to_3d([(center_x, center_y)], [depth])[0]
+                        # Get the corners of the bounding box
+                        corners = [(box[0], box[1]), (box[0], box[3]), (box[2], box[1]), (box[2], box[3])]
+                        # Calculate the depth at each corner
+                        depths = [self.get_depth(corner[0], corner[1], depth_frame) for corner in corners]
+                        # Calculate the average depth
+                        avg_depth = sum(depths) / len(depths)
+                        # Convert 2D to 3D using the average depth
+                        point_3d = pcg.convert_2d_to_3d([(center_x, center_y)], [avg_depth])[0]
+                        
+                        
                         cv2.circle(annotated_frame, (center_x, center_y), radius=2, color=(255, 255, 0), thickness=-1)
                         if self.results[0].boxes.id is not None and i < len(self.results[0].boxes.id):
                             track_id = self.results[0].boxes.id[i]
@@ -155,8 +163,13 @@ class Detector:
     
     def calculate_box_center(self, box):
         # The box coordinates are in the format (x1, y1, x2, y2)
-        center_x = (box[0] + box[2]) / 2
-        center_y = (box[1] + box[3]) / 2
+        # Define the four corners of the box
+        corners = [(box[0], box[1]), (box[0], box[3]), (box[2], box[1]), (box[2], box[3])]
+        
+        # Calculate the average x and y coordinates
+        center_x = sum(corner[0] for corner in corners) / len(corners)
+        center_y = sum(corner[1] for corner in corners) / len(corners)
+        
         return int(center_x), int(center_y)
     
     def calculate_box_centers(self, results):
