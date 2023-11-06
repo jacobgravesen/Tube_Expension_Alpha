@@ -61,7 +61,7 @@ class Detector:
         if success:
             start_time = time()  # Add this line to record the start time
             # Use the track method instead of predict
-            self.results = self.model.track(frame, persist=True)                
+            self.results = self.model.track(frame, persist=True) # Set persists=True for tracking.              
             box_centers = self.calculate_box_centers(self.results)
             annotated_frame = self.results[0].plot(boxes=False)
             

@@ -53,31 +53,13 @@ class MoveRobot:
         return rotated_point
     
     def move_robot_to_point(self, point):
-        pass
-    
-    def move_to_first_required_point(self, point=None):
-        if point is None:
-            # Step 1: Write the first point from required_points.csv to current_point.csv
-            self.target_coords_handler.write_current_point_to_csv()
-
-            # Step 2: Get the current point from current_point.csv
-            point = self.target_coords_handler.read_current_point_from_csv()
-
         if point is not None and len(point) >= 3:
-            self.robot.setSpeed(25)
+            self.robot.setSpeed(40)
             # Convert the coordinates to RoboDK's coordinate system
             x, y, z = np.array(point)
 
-            # Define the translation from the camera to the robot base
-            #tx, ty, tz = [-100, -300, 110]  # replace with your actual values
-
-            # Apply the translation
-            #x += tx
-            #y += ty
-            #z += tz
-
             # Create the pose matrix with no orientation
-            pose_matrix = transl(x-120, y-330, z+90)
+            pose_matrix = transl(x-100, y-330, z+85) # 55
             
             # Create a 4x4 rotation matrix around the z-axis
             rotation_angle_rad = math.radians(-45)  # adjust this value as needed
@@ -99,11 +81,22 @@ class MoveRobot:
             # Apply the orientation
             pose_matrix = pose_matrix * rotx(roll) * roty(pitch) * rotz(yaw)
 
-
-
             print("Moving to goal: ", pose_matrix)
             # Move the robot to the pose
             self.robot.MoveL(pose_matrix)
+    
+    def move_to_first_required_point(self, point=None):
+        if point is None:
+            # Step 1: Write the first point from required_points.csv to current_point.csv
+            self.target_coords_handler.write_current_point_to_csv()
+
+            # Step 2: Get the current point from current_point.csv
+            point = self.target_coords_handler.read_current_point_from_csv()
+            self.move_robot_to_point([point[0]-30, point[1], point[2]])
+            self.move_robot_to_point(point)
+            self.move_robot_to_point([point[0]-30, point[1], point[2]])
+
+       
             self.target_coords_handler.move_completed_point()
 
     def move_to_all_required_points(self):
