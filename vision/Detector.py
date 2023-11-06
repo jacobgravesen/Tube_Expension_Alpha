@@ -119,11 +119,11 @@ class Detector:
 
     def get_depth(self, x, y, depth_frame):
         """
-        Get the depth value of the specified pixel in centimeters
+        Get the depth value of the specified pixel in millimeters
         """
         depth_in_meters = depth_frame.get_distance(x, y)
-        depth_in_centimeters = depth_in_meters * 100
-        return depth_in_centimeters
+        depth_in_millimeters = depth_in_meters * 1000
+        return depth_in_millimeters
 
    
 

@@ -19,13 +19,17 @@ def calculate_rotation_angle(point_robot, point_simulation):
     Returns:
     float: The rotation angle in degrees.
     """
-    dx_robot, dy_robot = point_robot[0], point_robot[1]
-    dx_sim, dy_sim = point_simulation[0], point_simulation[1]
+    # Translate points to origin
+    dx_robot, dy_robot = point_robot[0] - point_robot[0], point_robot[1] - point_robot[1]
+    dx_sim, dy_sim = point_simulation[0] - point_robot[0], point_simulation[1] - point_robot[1]
 
+    # Calculate angle
     angle_robot = math.atan2(dy_robot, dx_robot)
     angle_sim = math.atan2(dy_sim, dx_sim)
 
+    # Calculate relative rotation angle
     rotation_angle = math.degrees(angle_sim - angle_robot)
+
     return rotation_angle
 
 def rotate_point(point, angle_degrees):
@@ -46,8 +50,8 @@ def rotate_point(point, angle_degrees):
     return [x_new, y_new, point[2]]  # Assuming point[2] is the Z coordinate
 
 # Replace these with your actual points
-point_robot = [-61.27, -272.29]
-point_simulation = [181.23, -435.84]
+point_robot = [356.31, 0.56]
+point_simulation = [354.944, -0.375]
 
 # Calculate the rotation angle
 rotation_angle = calculate_rotation_angle(point_robot, point_simulation)

@@ -40,10 +40,14 @@ class PointCloudGenerator:
     def convert_2d_to_3d(self, points_2d, depth_values):
         points_3d = []
         
+        #for (x, y), depth in zip(points_2d, depth_values):
+        #    X = (x - self.mtx[0, 2]) * depth / self.mtx[0, 0]
+        #    Y = -(y - self.mtx[1, 2]) * depth / self.mtx[1, 1]
+        #    Z = depth
         for (x, y), depth in zip(points_2d, depth_values):
-            X = (x - self.mtx[0, 2]) * depth / self.mtx[0, 0]
-            Y = -(y - self.mtx[1, 2]) * depth / self.mtx[1, 1]
-            Z = depth
+            X = depth
+            Y = -(x - self.mtx[0, 2]) * depth / self.mtx[0, 0]
+            Z = -(y - self.mtx[1, 2]) * depth / self.mtx[1, 1]
             
             points_3d.append((X, Y, Z))
         
