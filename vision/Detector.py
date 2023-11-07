@@ -97,9 +97,11 @@ class Detector:
                             cv2.putText(annotated_frame, f'X: {point_3d[0]:.2f}, Y: {point_3d[1]:.2f}, Z: {point_3d[2]:.2f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)  
                 
                 # Calculate the average angle
-                avg_angle = sum(angles) / len(angles) if angles else None
-                # Print the average angle onto the annotated frame
-                cv2.putText(annotated_frame, f'Avg Angle: {avg_angle:.2f}', (10, 260), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                avg_angle = self.calculate_average_angle(angles)
+
+                if avg_angle is not None:
+                    # Print the average angle onto the annotated frame
+                    cv2.putText(annotated_frame, f'Avg Angle: {avg_angle:.2f}', (10, 260), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
             
             
@@ -144,6 +146,16 @@ class Detector:
         depth_in_millimeters = depth_in_meters * 1000
         return depth_in_millimeters
 
+    def calculate_average_angle(self, angles):
+        # Exclude angles where the absolute value is 0
+        valid_angles = [angle for angle in angles if abs(angle) != 0]
+
+        # Calculate the average angle
+        self.avg_angle = sum(valid_angles) / len(valid_angles) if valid_angles else None
+        return self.avg_angle
+
+    def get_average_angle(self):
+        return self.avg_angle
    
 
     def calculate_fps(self, start_time):

@@ -18,6 +18,11 @@ class TargetCoordsHandler:
             for point in points_3d:
                 if abs(point[2]) != 0:
                     writer.writerow([point[0], point[1], point[2]])
+    
+    def write_angle_to_csv(self, avg_angle):
+        with open('robot_movement/plate_angle.csv', 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([avg_angle])
 
     def write_current_point_to_csv(self):
         print("write_current_point_to_csv called")

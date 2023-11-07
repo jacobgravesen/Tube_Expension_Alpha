@@ -346,6 +346,12 @@ class MainWindow(QMainWindow):
         # If points were detected, write them to the CSV file
         if points_3d is not None:
             self.target_coords_handler.write_predictions_to_csv(points_3d)
+        
+        angle = self.robot_instructions.detector.get_average_angle()
+        
+        if angle is not None:
+            self.target_coords_handler.write_angle_to_csv(angle)
+        
 
     def on_write_current_point_button_clicked(self):
         print("on_write_current_point_button_clicked called")
