@@ -7,8 +7,7 @@ from time import time
 import numpy as np
 import pyrealsense2 as rs
 from vision.PointCloudGenerator import PointCloudGenerator
-
-
+from vision.AngleCalculator import AngleCalculator
 
 class Detector:
     def __init__(self, model_path, intrinsic_parameters_path):
@@ -19,6 +18,8 @@ class Detector:
         self.pipeline = None
         self.cap = None
         self.pcg = PointCloudGenerator(intrinsic_parameters_path)
+        self.angle_calculator = AngleCalculator(intrinsic_parameters_path)
+
 
 
     def start_pipeline(self, video_path_or_cam_index):
@@ -70,8 +71,13 @@ class Detector:
 
             if self.results[0].boxes is not None:
                 # Draw each mask center as a small green dot and display the tracking ID
+                angles = []  # List to store all angles
                 for i, box in enumerate(self.results[0].boxes.xyxy):
                     center_x, center_y = self.calculate_box_center(box)
+                    angle = self.angle_calculator.calculate_angle(box, depth_frame)
+                    angles.append(angle)  # Add the calculated angle to the list
+
+
                     if center_x is not None and center_y is not None:
                         # Get the corners of the bounding box
                         corners = [(box[0], box[1]), (box[0], box[3]), (box[2], box[1]), (box[2], box[3])]
@@ -89,7 +95,12 @@ class Detector:
                             cv2.putText(annotated_frame, f'ID: {int(track_id)}, X: {point_3d[0]:.2f}, Y: {point_3d[1]:.2f}, Z: {point_3d[2]:.2f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                         else:
                             cv2.putText(annotated_frame, f'X: {point_3d[0]:.2f}, Y: {point_3d[1]:.2f}, Z: {point_3d[2]:.2f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)  
-                        
+                
+                # Calculate the average angle
+                avg_angle = sum(angles) / len(angles) if angles else None
+                # Print the average angle onto the annotated frame
+                cv2.putText(annotated_frame, f'Avg Angle: {avg_angle:.2f}', (10, 260), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+
             
             
             fps = self.calculate_fps(start_time)
