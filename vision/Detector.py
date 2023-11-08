@@ -62,21 +62,34 @@ class Detector:
         if success:
             start_time = time()  # Add this line to record the start time
             # Use the track method instead of predict
-            self.results = self.model.track(frame, persist=True) # Set persists=True for tracking.              
+            self.results = self.model.track(frame, persist=False) # Set persists=True for tracking.              
             box_centers = self.calculate_box_centers(self.results)
             annotated_frame = self.results[0].plot(boxes=False)
-            
+
+            # Define the coordinates of the two points
+            height, width = frame.shape[:2]
+            center_y = height // 2
+            triangle_width = 70
+            triangle_p_1 = (width // 2 - triangle_width, center_y)
+            triangle_p_2 = (width // 2 + triangle_width, center_y)
+
+             # Draw two red dots at the defined points
+            cv2.circle(annotated_frame, triangle_p_1, radius=2, color=(0, 0, 255), thickness=-1)
+            cv2.circle(annotated_frame, triangle_p_2, radius=2, color=(0, 0, 255), thickness=-1)
+
+             # Calculate the angle of the plane
+            box = [triangle_p_1[0], triangle_p_1[1], triangle_p_2[0], triangle_p_2[1]]
+            self.angle = self.angle_calculator.calculate_angle(box, depth_frame)
+            cv2.putText(annotated_frame, f'Angle: {float(self.angle)}', (20,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+
+        
             # Check if any objects were detected and their IDs are available # prints box dimensions and ids.
             #print(f"boxes: {self.results[0].boxes}, boxes.id: {self.results[0].boxes.id}")
 
             if self.results[0].boxes is not None:
                 # Draw each mask center as a small green dot and display the tracking ID
-                angles = []  # List to store all angles
                 for i, box in enumerate(self.results[0].boxes.xyxy):
                     center_x, center_y = self.calculate_box_center(box)
-                    angle = self.angle_calculator.calculate_angle(box, depth_frame)
-                    angles.append(angle)  # Add the calculated angle to the list
-
 
                     if center_x is not None and center_y is not None:
                         # Get the corners of the bounding box
@@ -87,23 +100,13 @@ class Detector:
                         avg_depth = sum(depths) / len(depths)
                         # Convert 2D to 3D using the average depth
                         point_3d = pcg.convert_2d_to_3d([(center_x, center_y)], [avg_depth])[0]
-                        
-                        
+   
                         cv2.circle(annotated_frame, (center_x, center_y), radius=2, color=(255, 255, 0), thickness=-1)
                         if self.results[0].boxes.id is not None and i < len(self.results[0].boxes.id):
                             track_id = self.results[0].boxes.id[i]
                             cv2.putText(annotated_frame, f'ID: {int(track_id)}, X: {point_3d[0]:.2f}, Y: {point_3d[1]:.2f}, Z: {point_3d[2]:.2f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                         else:
-                            cv2.putText(annotated_frame, f'X: {point_3d[0]:.2f}, Y: {point_3d[1]:.2f}, Z: {point_3d[2]:.2f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)  
-                
-                # Calculate the average angle
-                avg_angle = self.calculate_average_angle(angles)
-
-                if avg_angle is not None:
-                    # Print the average angle onto the annotated frame
-                    cv2.putText(annotated_frame, f'Avg Angle: {avg_angle:.2f}', (10, 260), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-
-            
+                            cv2.putText(annotated_frame, f'X: {point_3d[0]:.2f}, Y: {point_3d[1]:.2f}, Z: {point_3d[2]:.2f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)      
             
             fps = self.calculate_fps(start_time)
             cv2.putText(annotated_frame, f'FPS: {int(fps)}', (20,70), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
@@ -148,14 +151,16 @@ class Detector:
 
     def calculate_average_angle(self, angles):
         # Exclude angles where the absolute value is 0
-        valid_angles = [angle for angle in angles if abs(angle) != 0]
-
+        valid_angles = [angle for angle in angles if np.sum(angle) != 0]
+        print("THIS IS SIMPLE ANGLES: ", angles)
+        print("HEEEEEEEEEEEEEEEEY LOOOOOOOOOOOOOOOOOOK HEEEEEEEEEEERE!!!!:", valid_angles)
         # Calculate the average angle
         self.avg_angle = sum(valid_angles) / len(valid_angles) if valid_angles else None
+        print("Average angle: ", self.avg_angle)
         return self.avg_angle
 
-    def get_average_angle(self):
-        return self.avg_angle
+    def get_angle(self):
+        return self.angle
    
 
     def calculate_fps(self, start_time):

@@ -41,6 +41,12 @@ class MoveRobot:
             next(reader)  # Skip the header
             self.camera_to_robot_transformation = list(map(float, next(reader)))
 
+    def read_plate_angle(self, file_path='robot_movement/plate_angle.csv'):
+        with open(file_path, 'r') as file:
+            reader = csv.reader(file)
+            angle = float(next(reader)[0])
+        return angle
+
     def rotate_point_around_base(self, point):
         # Convert the rotation angle to radians
         angle_rad = math.radians(-45)  # adjust this value as needed
@@ -59,7 +65,7 @@ class MoveRobot:
             x, y, z = np.array(point)
 
             # Create the pose matrix with no orientation
-            pose_matrix = transl(x-100, y-330, z+85) # 55
+            pose_matrix = transl(x-95, y-340, z+90) # 55
             
             # Create a 4x4 rotation matrix around the z-axis
             rotation_angle_rad = math.radians(-45)  # adjust this value as needed
@@ -80,6 +86,10 @@ class MoveRobot:
             
             # Apply the orientation
             pose_matrix = pose_matrix * rotx(roll) * roty(pitch) * rotz(yaw)
+
+            angle = self.read_plate_angle()
+
+            pose_matrix = pose_matrix * rotx(math.radians(-angle))
 
             print("Moving to goal: ", pose_matrix)
             # Move the robot to the pose

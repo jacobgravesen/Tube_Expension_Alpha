@@ -12,8 +12,8 @@ class AngleCalculator:
 
     def calculate_angle(self, box, depth_frame):
         # Get the depth at the top left and top right corners of the bounding box
-        depth_x1 = self.get_depth(int(box[0]), int(box[1]), depth_frame)
-        depth_x2 = self.get_depth(int(box[2]), int(box[1]), depth_frame)
+        depth_x1 = self.get_depth(int(box[0]), int(box[1]), depth_frame) 
+        depth_x2 = self.get_depth(int(box[2]), int(box[1]), depth_frame) 
 
         # Convert x1 and x2 from pixel coordinates to camera coordinates
         x1_cam = (box[0] - self.camera_matrix[0, 2]) * depth_x1 / self.camera_matrix[0, 0]

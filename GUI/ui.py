@@ -347,7 +347,7 @@ class MainWindow(QMainWindow):
         if points_3d is not None:
             self.target_coords_handler.write_predictions_to_csv(points_3d)
         
-        angle = self.robot_instructions.detector.get_average_angle()
+        angle = self.robot_instructions.detector.get_angle()
         
         if angle is not None:
             self.target_coords_handler.write_angle_to_csv(angle)
