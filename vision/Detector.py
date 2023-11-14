@@ -74,8 +74,8 @@ class Detector:
             triangle_p_2 = (width // 2 + triangle_width, center_y)
 
              # Draw two red dots at the defined points
-            cv2.circle(annotated_frame, triangle_p_1, radius=2, color=(0, 0, 255), thickness=-1)
-            cv2.circle(annotated_frame, triangle_p_2, radius=2, color=(0, 0, 255), thickness=-1)
+            cv2.circle(annotated_frame, triangle_p_1, radius=4, color=(0, 0, 255), thickness=-1)
+            cv2.circle(annotated_frame, triangle_p_2, radius=4, color=(0, 0, 255), thickness=-1)
 
              # Calculate the angle of the plane
             box = [triangle_p_1[0], triangle_p_1[1], triangle_p_2[0], triangle_p_2[1]]

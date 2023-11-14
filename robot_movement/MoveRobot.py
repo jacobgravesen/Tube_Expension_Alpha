@@ -16,6 +16,7 @@ class MoveRobot:
         if not self.station.Valid():
             self.station = self.robodk.AddFile('Station1.rdk')
         self.robot = self.robodk.Item('UR5') 
+        self.robot_speed = 60
 
         # Connect to the robot using default IP
         success = self.robot.Connect()  # Try to connect once
@@ -60,12 +61,18 @@ class MoveRobot:
     
     def move_robot_to_point(self, point):
         if point is not None and len(point) >= 3:
-            self.robot.setSpeed(40)
             # Convert the coordinates to RoboDK's coordinate system
             x, y, z = np.array(point)
 
+            tool_matrix = transl(-135, 0, 0)
+
             # Create the pose matrix with no orientation
-            pose_matrix = transl(x-95, y-340, z+90) # 55
+            pose_matrix = transl(x-65, y-341, z+88) # 55
+
+            pose_matrix = tool_matrix * pose_matrix 
+
+            #tool_transformation = transl(-120,0, 0)
+            #pose_matrix = tool_transformation * pose_matrix
             
             # Create a 4x4 rotation matrix around the z-axis
             rotation_angle_rad = math.radians(-45)  # adjust this value as needed
@@ -77,8 +84,12 @@ class MoveRobot:
             # Convert the list of lists to a robodk.robomath.Mat object
             rotation_matrix_robodk = robodk.robomath.Mat(rotation_matrix_list)
 
+
+
             # Apply the rotation
             pose_matrix = rotation_matrix_robodk * pose_matrix
+
+            
             
     
             # Define the orientation in radians
@@ -89,7 +100,7 @@ class MoveRobot:
 
             angle = self.read_plate_angle()
 
-            pose_matrix = pose_matrix * rotx(math.radians(-angle))
+            #pose_matrix = pose_matrix * rotx(math.radians(-angle))
 
             print("Moving to goal: ", pose_matrix)
             # Move the robot to the pose
@@ -108,8 +119,12 @@ class MoveRobot:
                 print("No more points in the list")
                 return
             
+            self.robot.setSpeed(self.robot_speed)
             self.move_robot_to_point([point[0]-30, point[1], point[2]])
+
+            self.robot.setSpeed(self.robot_speed/5)
             self.move_robot_to_point(point)
+            self.robot.setSpeed(self.robot_speed)
             self.move_robot_to_point([point[0]-30, point[1], point[2]])
 
        
@@ -125,3 +140,13 @@ class MoveRobot:
             except Exception as e:
                 print(f"An error occurred: {e}")
                 break
+            
+        self.return_to_base()
+
+
+    def return_to_base(self):
+        # Define the base joint values
+        base_joint_values = [-41.27, -70.23, -125.56, -164.61, -93.61, -89.76]
+
+        # Move the robot to the base joint values
+        self.robot.MoveJ(base_joint_values)

@@ -125,35 +125,10 @@ class MainWindow(QMainWindow):
         control_layout_left = QVBoxLayout()
         control_layout_right = QVBoxLayout()
 
-        # Add buttons to the left layout
-        self.start_button = QPushButton('Start')
-        self.stop_button = QPushButton('Stop')
-        self.add_points_button = QPushButton('Add Predicted Points')
-        self.add_points_button.clicked.connect(self.on_add_points_button_clicked)
-        self.get_next_point_button = QPushButton('Get Next Point')
-        self.get_next_point_button.clicked.connect(self.update_current_point)
-        self.move_button = QPushButton('Move Robot')
-        self.move_button.clicked.connect(self.move_robot_to_point)
-
-        control_layout_left.addWidget(self.start_button)
-        control_layout_left.addWidget(self.stop_button)
-        control_layout_left.addWidget(self.add_points_button)
-        control_layout_left.addWidget(self.get_next_point_button)
-        control_layout_left.addWidget(self.move_button)
-
         # Add 'Add CSV' button to the right layout
         self.add_csv_button = QPushButton('Add CSV')
         self.add_csv_button.clicked.connect(self.on_add_csv_button_clicked)
         control_layout_right.addWidget(self.add_csv_button)
-
-        self.write_current_point_button = QPushButton('Write Current Point')
-        self.write_current_point_button.clicked.connect(self.on_write_current_point_button_clicked)
-        control_layout_right.addWidget(self.write_current_point_button)
-
-         # Add 'Write Completed Point' button to the right layout
-        self.write_completed_point_button = QPushButton('Write Completed Point')
-        self.write_completed_point_button.clicked.connect(self.on_write_completed_point_button_clicked)
-        control_layout_right.addWidget(self.write_completed_point_button)
 
         # Add 'Move to All Required Points' button to the right layout
         self.move_to_all_points_button = QPushButton('Move to All Required Points')
@@ -179,25 +154,6 @@ class MainWindow(QMainWindow):
 
         # Add the QWidget to the grid layout
         self.grid_layout.addWidget(control_widget, 1, 0)
-
-    def move_robot_to_point(self):
-        # Define the minimum height to prevent collision with the floor
-        min_height = 20  # The point must be above this height threshold, in cm.
-
-        # Check if the current point has been set
-        if self.current_point is not None:
-            # Check if the height is above the minimum
-            if self.current_point[1] >= min_height:
-                # Convert the current point from cm to mm
-                current_point_mm = tuple(coordinate * 10 for coordinate in self.current_point)
-                # Rearrange the coordinates
-                transformed_point = (current_point_mm[2], current_point_mm[0], current_point_mm[1])
-                # Move the robot to the transformed point
-                self.move_robot.simple_move(transformed_point)
-            else:
-                print(f'Warning! The target height {self.current_point[1]} is below the minimum height {min_height}.')
-        else:
-            print('Current point not set')
 
     def initStatusInformation(self):
         self.status_label = QLabel('Status: idle')
@@ -351,15 +307,6 @@ class MainWindow(QMainWindow):
         
         if angle is not None:
             self.target_coords_handler.write_angle_to_csv(angle)
-        
-
-    def on_write_current_point_button_clicked(self):
-        print("on_write_current_point_button_clicked called")
-
-        self.target_coords_handler.write_current_point_to_csv()
-
-    def on_write_completed_point_button_clicked(self):
-        self.target_coords_handler.move_completed_point()
 
     def on_move_to_all_points_button_clicked(self):
         self.move_robot.move_to_all_required_points()
