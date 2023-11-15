@@ -98,13 +98,11 @@ class MainWindow(QMainWindow):
         # Adjust the row stretch
         self.grid_layout.setRowStretch(0, 80)  # camera feed row
         self.grid_layout.setRowStretch(1, 20)  # all other elements row
-        self.initCoordinateInput()
         self.initCurrentPointDisplay()
 
         self.points_display = QTextEdit(self)
         self.points_display.setReadOnly(True)  # Make the QTextEdit read-only   
         self.points_display.setStyleSheet("color: white;")  # Set the text color to white
-        self.grid_layout.addWidget(self.points_display, 1, 6)  # Adjust the position as needed
 
         
 
@@ -184,64 +182,6 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event): # Handling properly closing webcam when closing application.
         pass
-
-    def initCoordinateInput(self):
-        # Create QLineEdit widgets for the coordinates
-        self.x_input = QLineEdit(self)
-        self.y_input = QLineEdit(self)
-        self.z_input = QLineEdit(self)
-
-        # Set the text color to white
-        self.x_input.setStyleSheet("color: white;")
-        self.y_input.setStyleSheet("color: white;")
-        self.z_input.setStyleSheet("color: white;")
-
-        # Create a QPushButton to save the input
-        self.save_button = QPushButton('Save Coordinates', self)
-        self.save_button.clicked.connect(self.save_coordinates)
-
-
-        # Create QHBoxLayouts for the labels and their text boxes
-        x_layout = QHBoxLayout()
-        x_layout.addWidget(QLabel('X:'))
-        x_layout.addWidget(self.x_input)
-        x_layout.setContentsMargins(0, 0, 0, 0)  # Remove margins
-
-        y_layout = QHBoxLayout()
-        y_layout.addWidget(QLabel('Y:'))
-        y_layout.addWidget(self.y_input)
-        y_layout.setContentsMargins(0, 0, 0, 0)  # Remove margins
-
-        z_layout = QHBoxLayout()
-        z_layout.addWidget(QLabel('Z:'))
-        z_layout.addWidget(self.z_input)
-        z_layout.setContentsMargins(0, 0, 0, 0)  # Remove margins
-
-        # Add the widgets to the layout
-        self.grid_layout.addLayout(x_layout, 2, 0, 1, 2)  # Add the QHBoxLayouts to the grid layout
-        self.grid_layout.addLayout(y_layout, 2, 2, 1, 2)
-        self.grid_layout.addLayout(z_layout, 2, 4, 1, 2)
-        self.grid_layout.addWidget(self.save_button, 2, 6)
-
-    def save_coordinates(self):
-        # Get the input from the QLineEdit widgets
-        x = float(self.x_input.text())
-        y = float(self.y_input.text())
-        z = float(self.z_input.text())
-
-        # Flip the coordinates
-        flipped_coordinates = (y, z, x)
-
-        # Add the flipped coordinates to the required_points list
-        self.required_points.append(flipped_coordinates)
-
-        # Optionally, clear the QLineEdit widgets
-        self.x_input.clear()
-        self.y_input.clear()
-        self.z_input.clear()
-
-        self.current_point_label.setText(f'Current Point: {flipped_coordinates}')
-        self.update_points_display()  # Update the points display
 
     def initCurrentPointDisplay(self):
         # Create QLabel for displaying the current point
