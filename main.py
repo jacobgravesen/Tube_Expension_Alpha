@@ -5,6 +5,7 @@ from ultralytics import YOLO
 import cv2
 from GUI.ui import MainWindow, setup_application
 from PyQt5.QtWidgets import QApplication
+
 from vision.Detector import Detector
 from vision.PointCloudGenerator import PointCloudGenerator
 
@@ -35,7 +36,7 @@ move_robot = MoveRobot(target_coords_handler, 'robot_movement/sim_robot_to_real_
 app = setup_application()
 
 # Create a MainWindow instance
-window = MainWindow(robot_instructions, target_coords_handler)
+window = MainWindow(robot_instructions, target_coords_handler, detector)
 window.show()
 # Load the transformation matrix
 camera_to_robot_transformation_matrix = load_transformation_matrix('vision/camera_to_robot.csv')
@@ -56,15 +57,15 @@ while detector.cap.isOpened():
     #target_coords_handler.write_predictions_to_csv(points_3d)
 
     
-    cv2.imshow("Holes Detector", annotated_frame)
+    # Check if any PyQt windows are open
+    if not QApplication.topLevelWidgets():
+        break  # Exit the loop
+
     print(points_3d)
 
-
-    # Close the video capture and depth stream when done
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        cv2.destroyAllWindows()
-        app.quit()
-        break
+    # Process QApplication events
+    app.processEvents()
+    
 
 
 

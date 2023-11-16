@@ -12,7 +12,7 @@ from robot_movement.MoveRobot import MoveRobot
 from robot_movement.RobotInstructions import RobotInstructions
 from utils.utils import load_transformation_matrix
 import numpy as np
-
+import cv2
 
 
 
@@ -46,7 +46,7 @@ def setup_application():
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, robot_instructions, target_coords_handler):
+    def __init__(self, robot_instructions, target_coords_handler, detector):
         super().__init__()
 
         # This removes the standard Windows title bar. (Not Pretty)
@@ -54,7 +54,9 @@ class MainWindow(QMainWindow):
 
         self.robot_instructions = robot_instructions
         self.target_coords_handler = target_coords_handler
+        self.detector = detector
 
+        self.should_exit = False  # Add this line
 
         self.required_points = []
         self.current_point = (-10.93, 60.895 , 47.45)
@@ -66,15 +68,27 @@ class MainWindow(QMainWindow):
         self.initUI()
 
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Q:  # Check if 'q' key is pressed
+            self.should_exit = True  # Set the flag to True
+            # Set the WA_DeleteOnClose attribute
+            self.setAttribute(Qt.WA_DeleteOnClose)
+            self.close()  # Close the application
 
-    
     def update_camera_feed(self):
-        frame = QImage(800, 600, QImage.Format_RGB32)
-        frame.fill(Qt.black)
+          # Call the process_frame method and get the annotated_frame
+        _, _, annotated_frame = self.detector.process_frame(self.detector.pcg)
+          # Convert the annotated_frame from BGR to RGB
+        frame = cv2.cvtColor(annotated_frame, cv2.COLOR_BGR2RGB)
+
+         # Convert the frame to QImage
+        height, width, channel = frame.shape
+        bytesPerLine = 3 * width
+        qImg = QImage(frame.data, width, height, bytesPerLine, QImage.Format_RGB888)
 
         # Update the QGraphicsScene with the new QPixmap
         self.camera_scene.clear()  # Clear the previous frame
-        self.camera_scene.addPixmap(QPixmap.fromImage(frame))
+        self.camera_scene.addPixmap(QPixmap.fromImage(qImg))
 
 
     def initUI(self):

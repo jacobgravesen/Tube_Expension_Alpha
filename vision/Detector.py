@@ -57,7 +57,7 @@ class Detector:
         # Wait for a coherent pair of frames: depth and color
         frames = self.pipeline.wait_for_frames()
         depth_frame = frames.get_depth_frame()
-
+        
         success, frame = self.cap.read()
         if success:
             start_time = time()  # Add this line to record the start time
