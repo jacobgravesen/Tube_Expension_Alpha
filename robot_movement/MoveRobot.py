@@ -64,17 +64,18 @@ class MoveRobot:
             # Convert the coordinates to RoboDK's coordinate system
             x, y, z = np.array(point)
 
-            tool_matrix = transl(-135, 0, 0)
+            #tool_matrix = transl(-20, 0, 0)
 
             # Create the pose matrix with no orientation
-            pose_matrix = transl(x-65, y-341, z+88) # 55
+            pose_matrix = transl(x-75, y-333, z+88) # 55
 
-            pose_matrix = tool_matrix * pose_matrix 
+            #pose_matrix = tool_matrix * pose_matrix 
 
             #tool_transformation = transl(-120,0, 0)
             #pose_matrix = tool_transformation * pose_matrix
             
             # Create a 4x4 rotation matrix around the z-axis
+          
             rotation_angle_rad = math.radians(-45)  # adjust this value as needed
             rotation_matrix_list = [[math.cos(rotation_angle_rad), -math.sin(rotation_angle_rad), 0, 0],
                                     [math.sin(rotation_angle_rad), math.cos(rotation_angle_rad), 0, 0],
@@ -84,14 +85,11 @@ class MoveRobot:
             # Convert the list of lists to a robodk.robomath.Mat object
             rotation_matrix_robodk = robodk.robomath.Mat(rotation_matrix_list)
 
-
-
             # Apply the rotation
             pose_matrix = rotation_matrix_robodk * pose_matrix
 
             
             
-    
             # Define the orientation in radians
             roll, pitch, yaw = [math.radians(angle) for angle in [0, 90, 0]]
             
@@ -99,8 +97,8 @@ class MoveRobot:
             pose_matrix = pose_matrix * rotx(roll) * roty(pitch) * rotz(yaw)
 
             angle = self.read_plate_angle()
+            pose_matrix = pose_matrix * rotx(math.radians(-angle))
 
-            #pose_matrix = pose_matrix * rotx(math.radians(-angle))
 
             print("Moving to goal: ", pose_matrix)
             # Move the robot to the pose
@@ -123,11 +121,10 @@ class MoveRobot:
             self.move_robot_to_point([point[0]-30, point[1], point[2]])
 
             self.robot.setSpeed(self.robot_speed/5)
-            self.move_robot_to_point(point)
+            self.move_robot_to_point([point[0], point[1], point[2]])
             self.robot.setSpeed(self.robot_speed)
             self.move_robot_to_point([point[0]-30, point[1], point[2]])
 
-       
             self.target_coords_handler.move_completed_point()
 
     def move_to_all_required_points(self):

@@ -107,6 +107,9 @@ class Detector:
                             cv2.putText(annotated_frame, f'ID: {int(track_id)}, X: {point_3d[0]:.2f}, Y: {point_3d[1]:.2f}, Z: {point_3d[2]:.2f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
                         else:
                             cv2.putText(annotated_frame, f'X: {point_3d[0]:.2f}, Y: {point_3d[1]:.2f}, Z: {point_3d[2]:.2f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)      
+
+                        n_holes = len(self.results[0].boxes) if self.results[0].boxes is not None else 0
+                        cv2.putText(annotated_frame, f'#Holes: {n_holes}', (20,130), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
             
             fps = self.calculate_fps(start_time)
             cv2.putText(annotated_frame, f'FPS: {int(fps)}', (20,70), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
