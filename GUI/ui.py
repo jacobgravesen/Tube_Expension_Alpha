@@ -151,6 +151,11 @@ class MainWindow(QMainWindow):
         self.move_to_first_point_button.clicked.connect(self.on_move_to_first_point_button_clicked)
         control_layout_right.addWidget(self.move_to_first_point_button)
 
+         # Add 'Home' button to the right layout
+        self.home_button = QPushButton('Home')
+        self.home_button.clicked.connect(self.on_home_button_clicked)
+        control_layout_right.addWidget(self.home_button)
+
 
 
         # Create a QHBoxLayout
@@ -267,6 +272,9 @@ class MainWindow(QMainWindow):
 
     def on_move_to_first_point_button_clicked(self):
         self.move_robot.move_to_first_required_point()
+
+    def on_home_button_clicked(self):
+        self.move_robot.return_to_base()
 
 if __name__ == '__main__':
     app = setup_application()
