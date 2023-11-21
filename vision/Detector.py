@@ -80,7 +80,7 @@ class Detector:
              # Calculate the angle of the plane
             box = [triangle_p_1[0], triangle_p_1[1], triangle_p_2[0], triangle_p_2[1]]
             self.angle = self.angle_calculator.calculate_angle(box, depth_frame)
-            cv2.putText(annotated_frame, f'Angle: {float(self.angle)}', (20,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+            cv2.putText(annotated_frame, f'Angle: {float(self.angle):.1f}', (20,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
 
         
             # Check if any objects were detected and their IDs are available # prints box dimensions and ids.
@@ -100,13 +100,20 @@ class Detector:
                         avg_depth = sum(depths) / len(depths)
                         # Convert 2D to 3D using the average depth
                         point_3d = pcg.convert_2d_to_3d([(center_x, center_y)], [avg_depth])[0]
-   
-                        cv2.circle(annotated_frame, (center_x, center_y), radius=2, color=(255, 255, 0), thickness=-1)
-                        if self.results[0].boxes.id is not None and i < len(self.results[0].boxes.id):
-                            track_id = self.results[0].boxes.id[i]
-                            cv2.putText(annotated_frame, f'ID: {int(track_id)}, X: {point_3d[0]:.2f}, Y: {point_3d[1]:.2f}, Z: {point_3d[2]:.2f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+                        kinematic_fence = -245
+                        if point_3d[1] < kinematic_fence:
+                            circle_color = (0,0,255)
+                        elif abs(point_3d[2]) == 0:
+                            circle_color = (0, 165, 255)
                         else:
-                            cv2.putText(annotated_frame, f'X: {point_3d[0]:.2f}, Y: {point_3d[1]:.2f}, Z: {point_3d[2]:.2f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)      
+                            circle_color = (255,255,0)
+                        cv2.circle(annotated_frame, (center_x, center_y), radius=2, color=circle_color, thickness=-1)
+                        #if self.results[0].boxes.id is not None and i < len(self.results[0].boxes.id):
+                        #    track_id = self.results[0].boxes.id[i]
+                        #    cv2.putText(annotated_frame, f'ID: {int(track_id)}, X: {point_3d[0]:.2f}, Y: {point_3d[1]:.2f}, Z: {point_3d[2]:.2f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                        #else:
+                        #    cv2.putText(annotated_frame, f'X: {point_3d[0]:.2f}, Y: {point_3d[1]:.2f}, Z: {point_3d[2]:.2f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)      
 
                         n_holes = len(self.results[0].boxes) if self.results[0].boxes is not None else 0
                         cv2.putText(annotated_frame, f'#Holes: {n_holes}', (20,130), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)

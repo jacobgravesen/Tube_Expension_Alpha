@@ -8,6 +8,7 @@ import csv
 from utils.utils import load_transformation_matrix
 from scipy.spatial.transform import Rotation as R
 import robodk
+import time
 
 class MoveRobot:
     def __init__(self, target_coords_handler, sim_robot_to_real_robot_angle_file):
@@ -64,10 +65,8 @@ class MoveRobot:
             # Convert the coordinates to RoboDK's coordinate system
             x, y, z = np.array(point)
 
-            #tool_matrix = transl(-20, 0, 0)
-
             # Create the pose matrix with no orientation
-            pose_matrix = transl(x-75, y-333, z+88) # 55
+            pose_matrix = transl(x-75-50, y-333, z+88) # 55
 
             #pose_matrix = tool_matrix * pose_matrix 
 
@@ -98,12 +97,32 @@ class MoveRobot:
 
             angle = self.read_plate_angle()
             pose_matrix = pose_matrix * rotx(math.radians(-angle))
+            
+            #self.robot.MoveL(pose_matrix)
+            #pose_matrix = pose_matrix * transl(0,0,40)
+            #self.robot.setSpeed(self.robot_speed/5)
+
+            #self.robot.MoveL(pose_matrix)
+            #self.robot.setSpeed(self.robot_speed)
+            #pose_matrix = pose_matrix * transl(0,0,-40)
+            #self.robot.MoveL(pose_matrix)
+
+            # Enable collision checking
+            kinematic_fence_y = -245
+            if point[1] < kinematic_fence_y:
+                print(f"Point {point} is too close to the kinematic fence. Skipping this point.")
+            else:
+                self.robodk.setCollisionActive(1)
+                # Check if the pose is reachable by the robot and if the movement would result in a collision
+                if self.robot.Valid(pose_matrix) or self.robot.MoveL_Test(pose_matrix) < 0:
+                    print(f"Pose {pose_matrix} is  reachable by the robot or would not result in a collision. Skipping this pose.")
+
+                    print("Moving to goal: ", pose_matrix)
+                    # Move the robot to the pose
+                    self.robot.MoveL(pose_matrix)
 
 
-            print("Moving to goal: ", pose_matrix)
-            # Move the robot to the pose
-            self.robot.MoveL(pose_matrix)
-    
+
     def move_to_first_required_point(self, point=None):
         if point is None:
             # Step 1: Write the first point from required_points.csv to current_point.csv
@@ -118,12 +137,12 @@ class MoveRobot:
                 return
             
             self.robot.setSpeed(self.robot_speed)
-            self.move_robot_to_point([point[0]-30, point[1], point[2]])
+            #self.move_robot_to_point([point[0]-30, point[1], point[2]])
 
-            self.robot.setSpeed(self.robot_speed/5)
+            #self.robot.setSpeed(self.robot_speed/5)
             self.move_robot_to_point([point[0], point[1], point[2]])
-            self.robot.setSpeed(self.robot_speed)
-            self.move_robot_to_point([point[0]-30, point[1], point[2]])
+            #self.robot.setSpeed(self.robot_speed)
+            #self.move_robot_to_point([point[0]-30, point[1], point[2]])
 
             self.target_coords_handler.move_completed_point()
 
@@ -132,17 +151,20 @@ class MoveRobot:
         num_points = self.target_coords_handler.get_num_required_points()
 
         for _ in range(num_points):
+            time.sleep(1)
             try:
+                print("Moving to next point:")
                 self.move_to_first_required_point()
             except Exception as e:
                 print(f"An error occurred: {e}")
-                break
+                continue
             
         self.return_to_base()
 
 
     def return_to_base(self):
         # Define the base joint values
+        self.robot.setSpeed(self.robot_speed)
         base_joint_values = [-41.27, -70.23, -125.56, -164.61, -93.61, -89.76]
 
         # Move the robot to the base joint values

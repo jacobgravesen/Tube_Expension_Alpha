@@ -1,5 +1,7 @@
 import csv
 from vision.Detector import Detector
+from sklearn.cluster import DBSCAN
+
 
 class TargetCoordsHandler:
     def __init__(self):
@@ -7,6 +9,12 @@ class TargetCoordsHandler:
 
 
     def write_predictions_to_csv(self, points_3d):
+        print("Points")
+        print(points_3d)
+
+        # Cluster and sort the points
+        sorted_points = self.cluster_and_sort_points(points_3d)
+
         # Open the CSV file in write mode
         with open(self.csv_file_path, 'w', newline='') as file:
             writer = csv.writer(file)
@@ -14,8 +22,8 @@ class TargetCoordsHandler:
             # Write the header
             writer.writerow(["X", "Y", "Z"])
 
-            # Write the coordinates to the CSV file
-            for point in points_3d:
+            # Write the sorted points to the CSV file
+            for point in sorted_points:
                 if abs(point[2]) != 0:
                     writer.writerow([point[0], point[1], point[2]])
     
@@ -97,3 +105,23 @@ class TargetCoordsHandler:
             return current_point
         else:
             return None
+        
+    def cluster_and_sort_points(self, points_3d, eps=5, min_samples=1):
+        # Cluster the points by Z value
+        z_values = [[point[2]] for point in points_3d]
+        db = DBSCAN(eps=eps, min_samples=min_samples).fit(z_values)
+        clusters = {label: [] for label in set(db.labels_)}
+        for point, label in zip(points_3d, db.labels_):
+            clusters[label].append(point)
+
+        # Calculate the average Z value for each cluster
+        avg_z_values = {label: sum(point[2] for point in points) / len(points) for label, points in clusters.items()}
+
+        # Sort the clusters based on the average Z values, in descending order
+        sorted_clusters = sorted(clusters.items(), key=lambda item: avg_z_values[item[0]], reverse=True)
+
+        # Sort the points in each cluster based on their Y values, from lowest to highest
+        sorted_points = [sorted(points, key=lambda point: point[1]) for label, points in sorted_clusters]
+
+        # Flatten the list of sorted points
+        return [point for points in sorted_points for point in points]
