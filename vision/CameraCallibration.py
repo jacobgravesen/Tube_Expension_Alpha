@@ -122,10 +122,10 @@ def visualize_all_points(image_folder, processed_image_files, obj_points, img_po
 
 
 if __name__ == "__main__":
-    calibrator = CameraCalibrator((7,10), 3.59) # width x height
+    calibrator = CameraCalibrator((6,9), 2.3) # width x height
 
     # Specify the folder containing the images for calibration
-    image_folder = r'C:\Users\dkaajgnc\Alfa Laval\OD Aalborg - Documents\01 Activities\905092 Tube Expansion Smoke Tube\700 JacobGravesen\Tube_Expension_Alpha\CallibrationImages'
+    image_folder = r'C:\Users\grave\Desktop\Tube_Expension_Alpha\CallibrationImages'
     
     # List all files in the specified folder
     image_files = [f for f in os.listdir(image_folder) if f.endswith('.jpg') or f.endswith('.png')]

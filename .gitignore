@@ -1,2 +1,5 @@
     __pycache__/
+    legacy_code/
+    future_works/
+    RoboDKPYFile.py
     *.pyc

@@ -19,7 +19,7 @@ from utils.utils import camera_to_robot_coordinates
 
 
 # Instantiate the Detector class with the model path
-detector = Detector('vision/best.pt', 'vision/intrinsic_parameters.csv')
+detector = Detector('vision/bestitest.pt', 'vision/intrinsic_parameters.csv')
 # Start the pipeline
 detector.start_pipeline(0)
 

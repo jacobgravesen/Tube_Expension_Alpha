@@ -8,6 +8,7 @@ import numpy as np
 import pyrealsense2 as rs
 from vision.PointCloudGenerator import PointCloudGenerator
 from vision.AngleCalculator import AngleCalculator
+import csv
 
 class Detector:
     def __init__(self, model_path, intrinsic_parameters_path):
@@ -20,6 +21,13 @@ class Detector:
         self.pcg = PointCloudGenerator(intrinsic_parameters_path)
         self.angle_calculator = AngleCalculator(intrinsic_parameters_path)
 
+    def load_intrinsic_parameters(self, filename):
+        with open(filename, 'r') as file:
+            reader = csv.reader(file)
+            lines = list(reader)
+            camera_matrix = np.array([list(map(float, line)) for line in lines[1:4]])
+            distortion_coefficients = np.array(list(map(float, lines[5])))
+        return camera_matrix, distortion_coefficients
 
 
     def start_pipeline(self, video_path_or_cam_index):
@@ -54,6 +62,13 @@ class Detector:
         return self.model(frame)
 
     def process_frame(self, pcg):
+         # Load intrinsic parameters
+        camera_matrix, distortion_coefficients = self.load_intrinsic_parameters('vision/intrinsic_parameters.csv')
+
+         # Get the focal length from the camera matrix
+        fx = camera_matrix[0, 0]
+        fy = camera_matrix[1, 1]
+
         # Wait for a coherent pair of frames: depth and color
         frames = self.pipeline.wait_for_frames()
         depth_frame = frames.get_depth_frame()
@@ -61,6 +76,10 @@ class Detector:
         success, frame = self.cap.read()
         if success:
             start_time = time()  # Add this line to record the start time
+            
+            # Rectify the image
+            frame = cv2.undistort(frame, camera_matrix, distortion_coefficients)
+
             # Use the track method instead of predict
             self.results = self.model.track(frame, persist=False) # Set persists=True for tracking.              
             box_centers = self.calculate_box_centers(self.results)
@@ -80,7 +99,7 @@ class Detector:
              # Calculate the angle of the plane
             box = [triangle_p_1[0], triangle_p_1[1], triangle_p_2[0], triangle_p_2[1]]
             self.angle = self.angle_calculator.calculate_angle(box, depth_frame)
-            cv2.putText(annotated_frame, f'Angle: {float(self.angle):.1f}', (20,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+            cv2.putText(annotated_frame, f'Angle: {float(self.angle):.1f}', (20,360), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,200,0), 2)
 
         
             # Check if any objects were detected and their IDs are available # prints box dimensions and ids.
@@ -111,15 +130,30 @@ class Detector:
                         cv2.circle(annotated_frame, (center_x, center_y), radius=2, color=circle_color, thickness=-1)
                         #if self.results[0].boxes.id is not None and i < len(self.results[0].boxes.id):
                         #    track_id = self.results[0].boxes.id[i]
-                        #    cv2.putText(annotated_frame, f'ID: {int(track_id)}, X: {point_3d[0]:.2f}, Y: {point_3d[1]:.2f}, Z: {point_3d[2]:.2f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                        #    cv2.putText(annotated_frame, f'ID: {int(track_id)}, X: {point_3d[0]:.0f}, Y: {point_3d[1]:.0f}, Z: {point_3d[2]:.0f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1)
                         #else:
-                        #    cv2.putText(annotated_frame, f'X: {point_3d[0]:.2f}, Y: {point_3d[1]:.2f}, Z: {point_3d[2]:.2f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)      
+                        #    cv2.putText(annotated_frame, f'X: {point_3d[0]:.0f}, Y: {point_3d[1]:.0f}, Z: {point_3d[2]:.0f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 1)      
+
+                        #if self.results[0].boxes.id is not None and i < len(self.results[0].boxes.id):
+                        #    track_id = self.results[0].boxes.id[i]
+                        #    cv2.putText(annotated_frame, f'{point_3d[0]:.0f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                        #else:
+                        #    cv2.putText(annotated_frame, f'{point_3d[0]:.0f}', (center_x, center_y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)      
+
 
                         n_holes = len(self.results[0].boxes) if self.results[0].boxes is not None else 0
-                        cv2.putText(annotated_frame, f'#Holes: {n_holes}', (20,130), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+                        cv2.putText(annotated_frame, f'#Holes: {n_holes}', (20,325), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,200,0), 2)
+
+                        # Calculate the physical width of the bounding box
+                        #physical_width = self.calculate_physical_width(box, avg_depth, fx)
+
+
+                        # Display the width on the frame
+                        #cv2.putText(annotated_frame, f'{physical_width:.0f}', (center_x, center_y), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
+
             
             fps = self.calculate_fps(start_time)
-            cv2.putText(annotated_frame, f'FPS: {int(fps)}', (20,70), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
+            cv2.putText(annotated_frame, f'FPS: {int(fps)}', (20,290), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,200,0), 2)
 
             # Get the 2D points and their corresponding depth values
             points_2d = self.calculate_box_centers(self.results)
@@ -228,70 +262,12 @@ class Detector:
             else:
                 points_3d = None
             return annotated_frame, points_3d
-
-
-
-if __name__ == "__main__":
-
-    # Import required modules at the beginning of your vision file
-    from vision.PointCloudGenerator import PointCloudGenerator
-    from robot_movement.RobotInstructions import RobotInstructions
-    from robot_movement.MoveRobot import MoveRobot
-    from utils.utils import load_transformation_matrix
-    from utils.utils import camera_to_robot_coordinates
-    import numpy as np
-    import cv2
-    # Instantiate the Detector class with the model path
-    detector = Detector('vision/best.pt')
     
-    # Start the pipeline
-    detector.start_pipeline(1)
-
-    # Instantiate the PointCloudGenerator class with the intrinsic parameters file
-    pcg = PointCloudGenerator('intrinsic_parameters.csv')
-    
-    # Instantiate the RobotInstructions class
-    robot_instructions = RobotInstructions()
-    
-    # Instantiate the MoveRobot class
-    move_robot = MoveRobot()
-
-    # Load the transformation matrix
-    camera_to_robot_transformation_matrix = load_transformation_matrix('camera_to_robot.csv')
-
-    # Run while the video capture is open
-    while detector.cap.isOpened():
-        # Process a frame
-        points_2d, depth_values, annotated_frame = detector.process_frame(pcg)  # Pass the pcg instance here
-
-
-
-        # If no points were detected, continue to the next frame
-        if points_2d is None or depth_values is None:
-            continue
-
-        # Convert the 2D points to 3D
-        points_3d = pcg.convert_2d_to_3d(points_2d, depth_values)
+    def calculate_physical_width(self, box, depth, f):
+        # Calculate the width of the bounding box in pixels
+        pixel_width = box[2] - box[0]  # assuming box is in the format (x1, y1, x2, y2)
         
-        # Add the 3D points to the instructions
-        robot_instructions.add_points(points_3d)
-
-        current_point = robot_instructions.get_next_point()
-        if current_point is not None:
-            current_point_transformed = np.dot(camera_to_robot_transformation_matrix, np.append(current_point, 1))[:-1]
-
-            ## Move the robot to the hardcoded point
-            #move_robot.simple_move(current_point_transformed)
-
-        # Update the annotated_frame display, or any other additional functionalities you need.
-        cv2.putText(annotated_frame, f'Current Point: {[round(num, 2) for num in current_point]}', (10, 200), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)    
-        cv2.putText(annotated_frame, f'Transformed Point: {[round(num, 2) for num in current_point_transformed]}', (10, 240), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)    
-        cv2.putText(annotated_frame, f'Lock State: {"Locked" if robot_instructions.is_locked else "Unlocked"}', (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-        cv2.imshow("Holes Detector", annotated_frame)
-
-         # Close the video capture and depth stream when done
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    # Close the video capture and depth stream when done
-    detector.close()
+        # Calculate the physical width of the bounding box
+        physical_width = depth * (pixel_width / f)
+        
+        return physical_width

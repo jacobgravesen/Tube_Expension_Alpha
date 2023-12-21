@@ -64,9 +64,42 @@ class MoveRobot:
         if point is not None and len(point) >= 3:
             # Convert the coordinates to RoboDK's coordinate system
             x, y, z = np.array(point)
+            """
+            # Define the interpolation range
+            y_start = 0
+            y_end = 230
+            interp_start = 0
+            interp_end = -10
 
+            # Apply the interpolation to the y-coordinate
+            if y < y_start:
+                y_interp = 0
+            elif y > y_end:
+                y_interp = interp_end
+            else:
+                y_interp = interp_start + ((y - y_start) / (y_end - y_start)) * (interp_end - interp_start)
+
+            y += y_interp
+            """
+            """
+            # Define the interpolation range for z
+            z_start = 0
+            z_end = 450
+            interp_start_z = 0
+            interp_end_z = 10
+
+            # Apply the interpolation to the z-coordinate
+            if z < z_start:
+                z_interp = 0
+            elif z > z_end:
+                z_interp = interp_end_z
+            else:
+                z_interp = interp_start_z + ((z - z_start) / (z_end - z_start)) * (interp_end_z - interp_start_z)
+
+            z += z_interp
+            """
             # Create the pose matrix with no orientation
-            pose_matrix = transl(x-75-50, y-333, z+88) # 55
+            pose_matrix = transl(x-75-20-50, y-338, z+86) # 55
 
             #pose_matrix = tool_matrix * pose_matrix 
 
@@ -96,7 +129,7 @@ class MoveRobot:
             pose_matrix = pose_matrix * rotx(roll) * roty(pitch) * rotz(yaw)
 
             angle = self.read_plate_angle()
-            pose_matrix = pose_matrix * rotx(math.radians(-angle))
+            #pose_matrix = pose_matrix * rotx(math.radians(-angle))
             
             #self.robot.MoveL(pose_matrix)
             #pose_matrix = pose_matrix * transl(0,0,40)
@@ -108,7 +141,7 @@ class MoveRobot:
             #self.robot.MoveL(pose_matrix)
 
             # Enable collision checking
-            kinematic_fence_y = -245
+            kinematic_fence_y = -230 # was -245
             if point[1] < kinematic_fence_y:
                 print(f"Point {point} is too close to the kinematic fence. Skipping this point.")
             else:
@@ -119,32 +152,38 @@ class MoveRobot:
 
                     print("Moving to goal: ", pose_matrix)
                     # Move the robot to the pose
+                    self.robot.MoveL(pose_matrix*transl(0,0,-40))
+                    self.robot.setSpeed(self.robot_speed/3)
                     self.robot.MoveL(pose_matrix)
-
+                    self.robot.setSpeed(self.robot_speed)
+                    self.robot.MoveL(pose_matrix*transl(0,0,-40))
 
 
     def move_to_first_required_point(self, point=None):
-        if point is None:
-            # Step 1: Write the first point from required_points.csv to current_point.csv
-            self.target_coords_handler.write_current_point_to_csv()
-
-            # Step 2: Get the current point from current_point.csv
-            point = self.target_coords_handler.read_current_point_from_csv()
-
-            # Check if point is None
+        try:
             if point is None:
-                print("No more points in the list")
-                return
-            
-            self.robot.setSpeed(self.robot_speed)
-            #self.move_robot_to_point([point[0]-30, point[1], point[2]])
+                # Step 1: Write the first point from required_points.csv to current_point.csv
+                self.target_coords_handler.write_current_point_to_csv()
 
-            #self.robot.setSpeed(self.robot_speed/5)
-            self.move_robot_to_point([point[0], point[1], point[2]])
-            #self.robot.setSpeed(self.robot_speed)
-            #self.move_robot_to_point([point[0]-30, point[1], point[2]])
+                # Step 2: Get the current point from current_point.csv
+                point = self.target_coords_handler.read_current_point_from_csv()
 
-            self.target_coords_handler.move_completed_point()
+                # Check if point is None
+                if point is None:
+                    print("No more points in the list")
+                    return
+                
+                self.robot.setSpeed(self.robot_speed)
+                #self.move_robot_to_point([point[0]-30, point[1], point[2]])
+
+                #self.robot.setSpeed(self.robot_speed/5)
+                self.move_robot_to_point([point[0], point[1], point[2]])
+                #self.robot.setSpeed(self.robot_speed)
+                #self.move_robot_to_point([point[0]-30, point[1], point[2]])
+
+                self.target_coords_handler.move_completed_point()
+        except Exception as e:
+            print(f"An error occured: {e}")
 
     def move_to_all_required_points(self):
         # Get the initial number of points

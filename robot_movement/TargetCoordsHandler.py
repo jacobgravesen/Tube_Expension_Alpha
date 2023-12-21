@@ -13,8 +13,8 @@ class TargetCoordsHandler:
         print(points_3d)
 
         # Cluster and sort the points
-        sorted_points = self.cluster_and_sort_points(points_3d)
-
+        #sorted_points = self.cluster_and_sort_points(points_3d)
+        sorted_points = points_3d
         # Open the CSV file in write mode
         with open(self.csv_file_path, 'w', newline='') as file:
             writer = csv.writer(file)
