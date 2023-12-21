@@ -18,5 +18,6 @@ The user will then use the GUI to select what the Robot should do:
 
 ## The Robot Moves to the Points
 The robot moving to the points
+
 ![The Robot Moves to the Points](utils/GIFS/RobotMovesToHoles.gif)
 
