@@ -12,6 +12,7 @@ The user will then use the GUI to select what the Robot should do:
 - Save the predicted 3D points from the vision system
 - Move the robot to those points
 - Return to home position
+  
 ![Use the GUI to Save the Points](utils/GIFS/usingTheGUIGIF.gif)
 
 
