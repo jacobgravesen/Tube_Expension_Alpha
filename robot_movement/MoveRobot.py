@@ -99,7 +99,7 @@ class MoveRobot:
             z += z_interp
             """
             # Create the pose matrix with no orientation
-            pose_matrix = transl(x-75-20-50, y-338, z+86) # 55
+            pose_matrix = transl(x-75+30, y-338, z+86) # 55
 
             #pose_matrix = tool_matrix * pose_matrix 
 
@@ -129,7 +129,7 @@ class MoveRobot:
             pose_matrix = pose_matrix * rotx(roll) * roty(pitch) * rotz(yaw)
 
             angle = self.read_plate_angle()
-            #pose_matrix = pose_matrix * rotx(math.radians(-angle))
+            #po+se_matrix = pose_matrix * rotx(math.radians(-angle))
             
             #self.robot.MoveL(pose_matrix)
             #pose_matrix = pose_matrix * transl(0,0,40)
@@ -152,11 +152,11 @@ class MoveRobot:
 
                     print("Moving to goal: ", pose_matrix)
                     # Move the robot to the pose
-                    self.robot.MoveL(pose_matrix*transl(0,0,-40))
+                    self.robot.MoveL(pose_matrix*transl(0,0,-100))
                     self.robot.setSpeed(self.robot_speed/3)
                     self.robot.MoveL(pose_matrix)
                     self.robot.setSpeed(self.robot_speed)
-                    self.robot.MoveL(pose_matrix*transl(0,0,-40))
+                    self.robot.MoveL(pose_matrix*transl(0,0,-100))
 
 
     def move_to_first_required_point(self, point=None):

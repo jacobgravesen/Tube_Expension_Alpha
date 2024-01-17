@@ -13,8 +13,8 @@ class TargetCoordsHandler:
         print(points_3d)
 
         # Cluster and sort the points
-        #sorted_points = self.cluster_and_sort_points(points_3d)
-        sorted_points = points_3d
+        sorted_points = self.cluster_and_sort_points(points_3d)
+        #sorted_points = points_3d
         # Open the CSV file in write mode
         with open(self.csv_file_path, 'w', newline='') as file:
             writer = csv.writer(file)
@@ -122,6 +122,10 @@ class TargetCoordsHandler:
 
         # Sort the points in each cluster based on their Y values, from lowest to highest
         sorted_points = [sorted(points, key=lambda point: point[1]) for label, points in sorted_clusters]
+
+        # Reverse every second cluster
+        for i in range(1, len(sorted_points), 2):
+            sorted_points[i] = sorted_points[i][::-1]
 
         # Flatten the list of sorted points
         return [point for points in sorted_points for point in points]
